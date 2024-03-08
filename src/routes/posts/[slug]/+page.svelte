@@ -5,15 +5,35 @@
   import { getUserId, getTokenFromLocalStorage } from '../../../utils/auth';
   import { PUBLIC_BACKEND_BASE_URL } from '$env/static/public';
   export let data;
+//
 
   function editPost() {
-    goto(`/jobs/${data.job.id}/editjob`);
+    goto(`/posts/${data.post.id}/edit`); 
   };
 
-  function afterDeleteUserPost() {
-    goto(`/`);
-  };
+  function afterDelete() {
+  try {
+    goto(`/explore`);
+  } catch (error) {
+    console.error('Error navigating after deleting post:', error);
+  }
+}
 
+  // Image Payment
+  export async function imagePayment(id){
+    console.log(id)
+
+  const resp = await fetch(PUBLIC_BACKEND_BASE_URL + '/payment',{
+    method: 'POST',
+    mode : 'cors',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify({id})
+  });
+    const res = await resp.json()
+    window.location = res
+  }
 
   export async function deleteUserPost() {
   try {
@@ -21,7 +41,7 @@
     if (!userId) return false;
 
     const resp = await fetch(
-      PUBLIC_BACKEND_BASE_URL + `/api/collections/jobs/records/${data.job.id}`,
+      PUBLIC_BACKEND_BASE_URL + `/image/${data.post.id}`, // Removed the extra } character
       {
         method: 'DELETE',
         mode: 'cors',
@@ -32,63 +52,44 @@
       }
     );
     console.log(resp)
-
+    
+    afterDelete();
     if (resp.status == 204) {
-      afterDeleteUserPost();
       return true;
     }
-
+    
     return false;
   } catch (error) {
     console.error('Failed to delete user post:', error);
     return null;
   }
 }
+
+
+
 </script>
 
-
-<div class="mt-10" style="padding-left: 80px; padding-right: 70px; margin-bottom: 100px;">
-  <div class="flex">
-      <div class="flex-1">
-          <h1 class="text-3xl font-extrabold">{data.job.title}</h1>
-          <p class="text-xl">{data.job.employer}</p>
-      </div>
-  </div>
-
-  <div class="flex flex-row w-full mt-8">
-      <div class="basis-4/5 prose max-w-none w-full">
-          <h2 class="text-xl font-thin">Description</h2>
-          <SvelteMarkdown source={data.job.description} />
-          <div class="mt-6" />
-          <h2 class="text-xl font-thin">Requirements</h2>
-          <SvelteMarkdown source={data.job.requirements} />
-          <div class="mt-6" />
-          <h2 class="text-xl font-thin">How to Apply?</h2>
-          <p>{data.job.applicationInstructions}</p>
-      </div>
-      <div class="basis-1/5 ml-4">
-          <h2 class="text-xl font-thin">Location</h2>
-          <p>{data.job.location}</p>
-          <div class="mt-6" />
-          <h2 class="text-xl font-thin">Salary Range</h2>
-          <p>
-              USD {humanize.formatNumber(data.job.minAnnualCompensation)} - USD {humanize.formatNumber(
-                  data.job.maxAnnualCompensation
-              )}
-          </p>
-
-        <div class="mt-8">
-            {#if data.job.user == getUserId() }
-            <button on:click={editPost} class="btn btn-md">Edit</button>
-            {/if}
-        </div>
-
-        <div class="mt-8">
-          {#if data.job.user == getUserId() }
-          <button on:click={deleteUserPost} class="btn btn-md">Delete</button>
+<div class="hero min-h-screen bg-base-200">
+  <div class="hero-content flex-col lg:flex-row-reverse mt-20">
+    <!-- svelte-ignore a11y-img-redundant-alt -->
+    <img src="{data.post.url}" alt="Image" class="w-2/6 rounded-lg shadow-2xl">
+    
+    <div class="flex flex-row w-full mt-8 w-2/6">
+      <div class="max-w w-full">
+        <h1 class="text-3xl font-extrabold mb-10">{data.post.title}</h1>
+        <h2 class="text-xl font-thin mb-5">Description</h2>
+        <SvelteMarkdown source={data.post.description} />
+        <h2 class="text-xl font-thin mt-10 mb-5">Price</h2>
+        <p>USD $ {humanize.formatNumber(data.post.price)}</p>
+        <div class="flex flex-row space-x-4 mt-10">
+          {#if data.post.userId === getUserId()}
+            <button on:click={editPost} class="btn btn-secondary">Edit</button>
+            <button on:click={deleteUserPost} class="btn btn-secondary">Delete</button>
           {/if}
-      </div>
-
-      </div>
+          <button type="submit" on:click={() => imagePayment(data.post.id)} class="btn btn-secondary">Buy Now</button>
+        </div>
+    </div>
+    </div>
   </div>
 </div>
+

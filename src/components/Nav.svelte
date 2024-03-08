@@ -25,20 +25,13 @@
     <a href="/" class="btn btn-ghost normal-case text-xl h-15">
       <img src="/nf-high-resolution-logo-transparent.png" alt="Logo" class="logo-image w-auto h-7">
     </a>
-<!-- Divider -->
-    <div class="divider divider-neutral divider-horizontal"></div>
+
 <!-- Links -->
     <a href="/explore" class="btn btn-ghost">Explore</a>
 <!-- Search bar -->
-    <div class="flex justify-center items-center flex-grow"> <!-- Center the search bar -->
-      <div class="form-control"> <!-- Add form-control class for styling -->
-        <input type="text" placeholder="Search" class="input input-bordered w-full md:w-96" />
-      </div>
-      <button class="btn btn-ghost btn-circle"><!-- search icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-      </button>
+
     </div>
-  </div>
+
 
  <!-- Dropdown menus -->
   <div class="flex-none gap-2">
@@ -56,7 +49,7 @@
     {#if $userStatus}
 <!-- Display profile-related links -->
       <li><a href="/profile">Profile</a></li>
-      <li><button><a href="/posts">Upload</a></button></li>
+      <li><button><a href="/posts/upload">Upload</a></button></li>
       <li><button on:click={logOut}><a href="/">Logout</a></button></li>
     {:else}
 <!-- Display login-related links -->

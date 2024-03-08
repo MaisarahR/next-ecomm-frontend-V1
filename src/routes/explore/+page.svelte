@@ -1,9 +1,27 @@
 <script>
-//export let data;
+  import humanize from 'humanize-plus';
+  export let data;
+
+  // function buyNow(postId) {
+  //   goto(`/posts/${postId}/edit`); 
+  // };
+
+//Page pagination (Part 1)
+  import { paginate, LightPaginationNav } from 'svelte-paginate'
+
+  let images = data.post
+  let currentPage = 1
+  let pageSize = 6
+  $: paginatedItems = paginate({ items: images, pageSize, currentPage })
+  
+
+    // Function to handle page change
+    function handlePageChange(event) {
+    currentPage = event.detail.page;
+  }
 </script>
 
-
-
+<!-- Hero Banner -->
 <div class="hero min-h-screen">
   <video autoplay loop muted class="absolute inset-0 w-full h-full object-cover">
     <source src="pexels-joseph-redfield-10755266-(540p).mp4" type="video/mp4">
@@ -17,66 +35,45 @@
   </div>
 </div>
 
-<div class="overflow-x-auto w-full" style="padding: 60px;">
+<!-- Test out card feature... -->
+<div class="overflow-x-auto w-full" style="padding: 50px;">
   <div class="flex flex-wrap justify-center">
-        <!--{#each data.jobs as job}-->
-<div class="card card-compact w-96 bg-base-100 shadow-xl">
-  <figure><img src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg" alt="Shoes" /></figure>
-  <div class="card-body">
-    <h2 class="card-title">Shoes!</h2>
-    <p>If a dog chews shoes whose shoes does he choose?</p>
-    <div class="card-actions justify-end">
-      <button class="btn btn-primary">Buy Now</button>
+   {#each paginatedItems as image} <!-- Page  pagination (Part 2), update all the {} below -->
+  <div class="flex justify-center">
+    <div class="card w-96 bg-base-100 shadow-xl" style="height: 450px; margin: 20px;" >
+      <!-- svelte-ignore a11y-img-redundant-alt -->
+      <figure style="height: 500px; overflow: hidden;"><img src="{image.url}" alt="Image" /></figure>
+      <div class="card-body bg-secondary text-black">
+    <h2 class="card-title">{image.title}</h2>
+    <div class="text-sm mt-1">
+      <span class="text-sm">ETH {humanize.formatNumber(image.price)}</span>
     </div>
+    <div class="italic text-xs opacity-50 mt-2"></div>
+    <div class="mb-10 text-xs opacity-70">
+      {image.description.slice(0, 240)}...
+    </div>
+    <div class="absolute bottom-4 right-4">
+      <a class="btn" href="/posts/{image.id}">Learn More</a>
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <a class="btn">Buy Now</a>
+    </div></div>
   </div>
 </div>
-<!--{/each}-->
-  </div>
+  {/each}
+</div>
 </div>
 
-<div class="flex flex-wrap justify-end">
-  <div class="join">
-    <button class="join-item btn">«</button>
-    <button class="join-item btn">Page 1</button>
-    <button class="join-item btn">»</button>
-  </div>
+<!-- Page  pagination (Part 3) -->
+<div class="pagination-container">
+  <LightPaginationNav
+  totalItems="{images.length}"
+  pageSize="{pageSize}"
+  currentPage="{currentPage}"
+  limit="{1}"
+  showStepOptions="{true}"
+  on:setPage="{(e) => currentPage = e.detail.page}"
+/>
 </div>
-
-<!-- 
-  <div class="overflow-x-auto w-full" style="padding: 50px;">
-  <div class="flex flex-wrap justify-center">
-    {#each data.jobs as job}
-    <div class="flex justify-center">
-      <div class="card w-96 md:w-80 lg:w-80 bg-base-100 bg-secondary text-secondary-content shadow-xl" style="height: 450px; padding: 10px; margin: 20px;">
-        <div class="card-body">
-          <h2 class="card-title">{job.title}</h2>
-          <div class="text-sm mt-1">
-            <p class="text-sm mt-1">{job.employer} . {job.location} .</p>
-            <span class="text-sm">USD {humanize.formatNumber(job.minAnnualCompensation)} - USD {humanize.formatNumber(job.maxAnnualCompensation)}</span>
-          </div>
-          <div class="italic text-xs opacity-50 mt-2">
-            posted {new Date(job.created).toLocaleDateString(undefined, {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-          </div>
-          <div class="divider divider-primary" style="margin: 5px;"></div>
-          <div class="mt-4 text-xs opacity-70">
-            {job.description.slice(0, 240)}...
-          </div>
-          <div class="absolute bottom-4 right-4">
-Note: Change button to anchor tag 
-            <a class="btn btn-ghost" href="/jobs/{job.id}">Read More</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    {/each}
-  </div>
-</div>
--->
 
 <style>
   .hero-background {
@@ -92,4 +89,39 @@ Note: Change button to anchor tag
 .text-glow2 {
   text-shadow: 0 0 0px #fff, 0 0 30px #0ff, 0 0 0px #fff, 0 0 30px #0ff, 0 0 0px #fff, 0 0 30px #fff, 0 0 0px #fff, 0 0 30px #0ff;
 }
+
+.card-wrapper {
+  flex: 0 0 33.33%; /* Each card wrapper takes up one-third of the container width */
+  max-width: 33.33%; /* Each card wrapper takes up one-third of the container width */
+  padding: 5px; /* Adjust padding as needed */
+  box-sizing: border-box; /* Ensure padding is included in the width */
+}
+
+
+
+  /* Override styles for pagination */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px; /* Adjust margin as needed */
+    margin-bottom: 20px;
+  }
+
+  .pagination-button {
+    background-color: #23262b; /* Change background color */
+    color: white; /* Change text color */
+    padding: 8px 12px; /* Adjust padding as needed */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 5px; /* Adjust margin between buttons */
+  }
+
+  .pagination-button:hover {
+    background-color: #2d3748; /* Change background color on hover */
+  }
+
+  .pagination-active {
+    background-color: #2d3748; /* Change background color for active page */
+  }
 </style>

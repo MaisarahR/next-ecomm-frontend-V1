@@ -26,7 +26,7 @@
       postLogin();
       loginSuccessAlert();
     } else {     //First 'resp' reading is await authenticateUser, second resp is autenticateUser function res, which links back to auth.js file. 
-      formErrors = resp.res.message;
+      // formErrors = resp.res.message;
       loginFailAlert();
       clicked = false;
     }
