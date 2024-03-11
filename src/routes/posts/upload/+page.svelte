@@ -3,51 +3,55 @@
 	import { goto } from '$app/navigation';
 	import { getTokenFromLocalStorage } from '../../../utils/auth';
 	import { uploadMedia } from '../../../utils/s3-uploader.js';
-	let formErrors = {};
+	import { writable } from 'svelte/store'; // Import Svelte writable store
+	import { jobpostCreationSuccessAlert, jobpostCreationFailAlert } from '../../../utils/alert';
+
+	let formErrors = {}; // Create a writable store for form errors
 	let clicked = false;
 
-// Upload Image function
-async function uploadImage(evt) {
-  const token = getTokenFromLocalStorage();
-  try {
-    const [fileName, fileUrl] = await uploadMedia(evt.target['file'].files[0]);
-    // Do something with fileName and fileUrl if needed
-    // Collect form data
-    evt.preventDefault(); // Prevent the default form submission behavior
+	// Upload Image function
+	async function uploadImage(evt) {
+		const token = getTokenFromLocalStorage();
+		const [fileName, fileUrl] = await uploadMedia(evt.target['file'].files[0]);
+		// Do something with fileName and fileUrl if needed
+		// Collect form data
+		evt.preventDefault(); // Prevent the default form submission behavior
 
-    const userPost = {
-      // id: getUserId,
-      title: evt.target['title'].value,
-      description: evt.target['description'].value,
-      price: parseInt(evt.target['price'].value),
-      url: fileUrl,
-      filename: fileName
-    };
+		const userPost = {
+			title: evt.target['title'].value,
+			description: evt.target['description'].value,
+			price: parseInt(evt.target['price'].value),
+			url: fileUrl,
+			filename: fileName
+		};
 
-    const resp = await fetch(PUBLIC_BACKEND_BASE_URL + '/image', {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(userPost)
-    });
+		console.log(userPost);
 
-    const res = await resp.json();
+		const resp = await fetch(PUBLIC_BACKEND_BASE_URL + '/image', {
+			method: 'POST',
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`
+			},
+			body: JSON.stringify(userPost)
+		});
 
-    if (resp.status == 200) {
-      goto(`/posts/${res.id}`);
-      clicked = true;
-    } else {
-      formErrors = res.data;
-      clicked = false;
-    }
-  } catch (error) {
-    console.error('File upload failed:', error);
-    // Handle file upload error
-  }
-}
+		const res = await resp.json();
+
+		if (resp.status === 200) {
+			goto(`/posts/${res.id}`);
+			jobpostCreationSuccessAlert();
+			clicked = true;
+		} else {
+			// Update formErrors store with error messages
+			formErrors = res.error;
+			console.log(res.error);
+			// console.log('Form errors:', res.data); // Log the form errors
+			jobpostCreationFailAlert();
+			clicked = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -56,9 +60,9 @@ async function uploadImage(evt) {
 
 <div class="hero min-h-screen bg-base-200">
 	<video autoplay loop muted class="absolute w-full h-full object-cover">
-    <source src="/pexels-luz-calor-som-12467968-(720p).mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+		<source src="/pexels-luz-calor-som-12467968-(720p).mp4" type="video/mp4" />
+		Your browser does not support the video tag.
+	</video>
 	<div class="hero-content flex-col lg:flex-row mt-20">
 		<div class="text-center lg:text-left">
 			<h1 class="text-5xl font-bold">Publish Post for Artwork</h1>
@@ -70,12 +74,12 @@ async function uploadImage(evt) {
 					<label class="label" for="title">
 						<span class="label-text">NFT Title</span>
 					</label>
-					<input type="text" name="title" placeholder="My first NFT" class="input input-bordered" required />
-					<!-- {#if 'title' in formErrors}
+					<input type="text" name="title" placeholder="My first NFT" class="input input-bordered" />
+					{#if 'title' in formErrors}
 						<label class="label" for="title">
-							<span class="label-text-alt text-red-500">{formErrors['title'].message}</span>
+							<div class="label-text-alt text-red-500">{formErrors['title']}</div>
 						</label>
-					{/if} -->
+					{/if}
 				</div>
 
 				<!-- Description -->
@@ -85,16 +89,15 @@ async function uploadImage(evt) {
 					</label>
 					<textarea
 						type="text"
-            name="description"
+						name="description"
 						placeholder="NFT description"
 						class="input input-bordered"
-						required
 					/>
-					<!-- {#if 'description' in formErrors}
+					{#if 'description' in formErrors}
 						<label class="label" for="description">
-							<span class="label-text-alt text-red-500">{formErrors['description'].message}</span>
+							<div class="label-text-alt text-red-500">{formErrors['description']}</div>
 						</label>
-					{/if} -->
+					{/if}
 				</div>
 
 				<!-- Price -->
@@ -102,18 +105,12 @@ async function uploadImage(evt) {
 					<label class="label" for="price">
 						<span class="label-text">Price (ETH)</span>
 					</label>
-					<input
-						type="text"
-						name="price"
-						placeholder="10000"
-						class="input input-bordered"
-						required
-					/>
-					<!-- {#if 'price' in formErrors}
+					<input type="text" name="price" placeholder="10000" class="input input-bordered" />
+					{#if 'price' in formErrors}
 						<label class="label" for="price">
-							<span class="label-text-alt text-red-500">{formErrors['price'].message}</span>
+							<div class="label-text-alt text-red-500">{formErrors['price']}</div>
 						</label>
-					{/if} -->
+					{/if}
 				</div>
 
 				<!-- File Upload -->
@@ -121,12 +118,14 @@ async function uploadImage(evt) {
 					<label class="label" for="file">
 						<span class="label-text">Select File</span>
 					</label>
-          <input type="file" name="file" class="file-input file-input-bordered file-input-primary" required />
-					<!-- {#if 'file' in formErrors}
-						<label class="label" for="file">
-							<span class="label-text-alt text-red-500">{formErrors['file']}</span>
-						</label>
-					{/if} -->
+					<input
+						type="file"
+						name="file"
+						class="file-input file-input-bordered file-input-primary"
+					/>
+					<!-- {#if $formErrors.file}
+			<p class="text-red-500">{$formErrors.file}</p>
+	{/if} -->
 				</div>
 
 				<!-- Button -->
