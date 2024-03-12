@@ -63,7 +63,7 @@
 						</div>
 						<div class="flex justify-end" style="margin-top: 5px;">
 							<a class="btn btn-neutral mr-2" href="/posts/{image.id}">Learn More</a>
-							<a class="btn btn-neutral" type="submit" on:click={() => imagePayment(image.id)}
+							<a class="btn btn-neutral" type="submit" on:click={() => imagePayment(image.id)} 
 								>Buy Now</a
 							>
 						</div>
